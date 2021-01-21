@@ -6,6 +6,7 @@ import {
   Linking,
   TouchableOpacity,
   Button,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QRCodeScanner from 'react-native-qrcode-scanner';
@@ -19,6 +20,9 @@ const Home = ({navigation}) => {
     data: '',
     QR: false,
   });
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showScan, setShowScan] = useState(true);
 
   const getData = async () => {
     try {
@@ -57,14 +61,25 @@ const Home = ({navigation}) => {
       friends: data,
       visible: false,
     });
+    setShowScan(true);
   };
 
   const showQR = () => {
     if (state.visible !== true) {
+      setModalVisible(true);
       setState({...state, QR: true});
     }
   };
 
+  const scanner = () => {
+    setShowScan(false);
+    setState({...state, visible: true});
+  };
+
+  const closeScanner = () => {
+    setState({...state, visible: false});
+    setShowScan(true);
+  };
   useEffect(() => {
     getData();
   }, []);
@@ -72,54 +87,55 @@ const Home = ({navigation}) => {
   return (
     <View style={{flex: 1, position: 'relative'}}>
       {state.visible ? (
-        <QRCodeScanner
-          onRead={onSuccess}
-          containerStyle={{
-            backgroundColor: 'green',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 2,
-          }}
-          cameraStyle={{width: 250, height: 250, alignSelf: 'center'}}
-          flashMode={RNCamera.Constants.FlashMode.auto}
-          // topContent={
-          //   <Text style={styles.centerText}>
-          //     Go to{' '}
-          //     <Text style={styles.textBold}>wikipedia.org/wiki/QR_code</Text> on
-          //     your computer and scan the QR code.
-          //   </Text>
-          // }
-          bottomContent={
-            <TouchableOpacity style={styles.buttonTouchable}>
-              <Text style={styles.buttonText}>OK. Got it!</Text>
-            </TouchableOpacity>
-          }
-        />
+        <Modal>
+          <QRCodeScanner
+            onRead={onSuccess}
+            cameraStyle={{width: 250, height: 250, alignSelf: 'center'}}
+            flashMode={RNCamera.Constants.FlashMode.auto}
+            bottomContent={
+              <TouchableOpacity
+                style={styles.buttonTouchable}
+                onPress={closeScanner}>
+                <Text style={styles.buttonText}>OK. Got it!</Text>
+              </TouchableOpacity>
+            }
+          />
+        </Modal>
       ) : null}
-      {state.QR ? <QRCode value={state.data} /> : null}
+      <TouchableOpacity onPress={showQR}>
+        <Text style={{textAlign: 'right'}}>...</Text>
+      </TouchableOpacity>
       {state.friends.map((friend, index) => {
         return (
-          <View
-            key={index}
-            style={{
-              width: '100%',
-              backgroundColor: '#ddd',
-              paddingVertical: 10,
-              borderBottomWidth: 1,
-            }}>
+          <View key={index} style={styles.list}>
+            <Text>Your new friend</Text>
             <Text>{friend}</Text>
           </View>
         );
       })}
-      <Button title="Logout" onPress={removeValue} style={{zIndex: 1}} />
-      <Button title="QR" onPress={showQR} style={{zIndex: 1}} />
-      <TouchableOpacity
-        style={{position: 'absolute', bottom: 20, right: 20}}
-        onPress={() => setState({...state, visible: true})}>
-        <Text style={{fontWeight: 'bold', fontSize: 24}}>+</Text>
-      </TouchableOpacity>
+      {state.QR ? (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <QRCode value={state.data} />
+            </View>
+          </View>
+        </Modal>
+      ) : null}
+      <View style={styles.bottom}>
+        <Button title="Logout" onPress={removeValue} />
+      </View>
+      {showScan ? (
+        <TouchableOpacity onPress={scanner} style={styles.addBtn}>
+          <Text style={{fontWeight: 'bold', fontSize: 24}}>+</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };
@@ -127,21 +143,52 @@ const Home = ({navigation}) => {
 export default Home;
 
 const styles = StyleSheet.create({
-  centerText: {
-    flex: 1,
-    fontSize: 18,
-    padding: 32,
-    color: '#777',
-  },
-  textBold: {
-    fontWeight: '500',
-    color: '#000',
-  },
   buttonText: {
     fontSize: 21,
-    color: 'rgb(0,122,255)',
+    color: '#335751',
   },
   buttonTouchable: {
     padding: 16,
+  },
+  bottom: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  addBtn: {
+    position: 'absolute',
+    bottom: 40,
+    right: 10,
+    elevation: 2,
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  list: {
+    width: '100%',
+    backgroundColor: '#ddd',
+    paddingVertical: 10,
+    alignItems: 'center',
   },
 });

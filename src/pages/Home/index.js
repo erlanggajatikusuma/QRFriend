@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Linking,
   TouchableOpacity,
   Button,
   Modal,
@@ -28,7 +27,6 @@ const Home = ({navigation}) => {
     try {
       const value = await AsyncStorage.getItem('email');
       if (value !== null) {
-        console.log('value: ', value);
         setState({
           ...state,
           data: value,
@@ -50,18 +48,19 @@ const Home = ({navigation}) => {
   };
 
   const onSuccess = (e) => {
-    // Linking.openURL(e.data).catch((err) =>
-    //   console.error('An error occured', err),
-    // );
-    console.log('QR: ', e.data);
-    const data = [];
-    data.push(e.data);
-    setState({
-      ...state,
-      friends: data,
-      visible: false,
-    });
-    setShowScan(true);
+    if (state.data !== e.data) {
+      console.log('QR: ', e.data);
+      const data = [];
+      data.push(e.data);
+      setState({
+        ...state,
+        friends: data,
+        visible: false,
+      });
+      setShowScan(true);
+    } else {
+      alert('You can not add yourself');
+    }
   };
 
   const showQR = () => {
@@ -103,12 +102,14 @@ const Home = ({navigation}) => {
         </Modal>
       ) : null}
       <TouchableOpacity onPress={showQR}>
-        <Text style={{textAlign: 'right'}}>...</Text>
+        <Text style={styles.dot}>...</Text>
       </TouchableOpacity>
       {state.friends.map((friend, index) => {
         return (
           <View key={index} style={styles.list}>
-            <Text>Your new friend</Text>
+            <Text style={{fontSize: 18, fontWeight: 'bold', paddingBottom: 15}}>
+              Your New Friend
+            </Text>
             <Text>{friend}</Text>
           </View>
         );
@@ -153,6 +154,8 @@ const styles = StyleSheet.create({
   bottom: {
     flex: 1,
     justifyContent: 'flex-end',
+    marginBottom: 35,
+    marginHorizontal: 10,
   },
   centeredView: {
     flex: 1,
@@ -176,7 +179,7 @@ const styles = StyleSheet.create({
   },
   addBtn: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 85,
     right: 10,
     elevation: 2,
     width: 50,
@@ -188,7 +191,14 @@ const styles = StyleSheet.create({
   list: {
     width: '100%',
     backgroundColor: '#ddd',
+    justifyContent: 'center',
     paddingVertical: 10,
     alignItems: 'center',
+  },
+  dot: {
+    textAlign: 'right',
+    fontWeight: 'bold',
+    fontSize: 24,
+    paddingRight: 10,
   },
 });

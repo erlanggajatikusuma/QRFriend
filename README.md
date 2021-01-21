@@ -1,7 +1,8 @@
 # QRFriend
 
-userA = userA@gmail.com, pass: userA
-userB = userB@gmail.com, pass: userB
+### userA = userA@gmail.com, pass: userA
+
+### userB = userB@gmail.com, pass: userB
 
 1. Login with one of those email.
 2. Click the ... (tripple dot) button to show your QR-Code.

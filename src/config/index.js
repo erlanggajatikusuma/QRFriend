@@ -2,7 +2,11 @@ import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import {Home} from '../pages';
+import {Home, Login} from '../pages';
+
+const LoginScreen = (props) => {
+  return <Login navigation={props.navigation} />;
+};
 
 function HomeScreen(props) {
   return <Home navigation={props.navigation} />;
@@ -21,7 +25,8 @@ const Stack = createStackNavigator();
 const Router = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName={LoginScreen}>
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Details" component={DetailsScreen} />
       </Stack.Navigator>
